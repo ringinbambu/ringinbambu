@@ -34,8 +34,8 @@ enum ENUM_THEME
 //--- System Information
 input string          _s0                  = "================= EA RINGIN BAMBU GT TRADING ================="; 
 sinput string         Info_System          = "EA Ringin Bambu GT Trading "; 
-sinput string         Info_Version         = "v0.01 [Komando Ringin Bambu]"; 
-sinput string         Info_Author          = "Ringin Bambu Strategy";                  
+sinput string         Info_Version         = "v0.01 [Ringin Bambu]"; 
+sinput string         Info_Author          = "Mochamad Tabrani";                  
 sinput string         Info_Support         = "cindo.pages.dev/indodev";   
 
 //--- Dashboard Layout
