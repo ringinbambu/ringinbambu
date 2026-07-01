@@ -646,7 +646,54 @@ void UpdateInfoSection()
    SetVal(PREFIX + "Acc_BalVal", DoubleToString(balance, 2), gClrValue);
    SetVal(PREFIX + "Acc_EqVal", DoubleToString(equity, 2), gClrValue);
    SetVal(PREFIX + "Sym_SpreadVal", IntegerToString(spread), gClrValue);
-   SetVal(PREFIX + "Sym_PLVal", DoubleToString(symbolPL, 2), symbolPL >= 0 ? gClrSuccess : gClrDanger);
+
+   // Calculate point value total early
+   double netLots = buyLots - sellLots;
+   double tickSize = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   double tickValue = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
+   double pointValuePerLot = (tickSize > 0) ? tickValue * (myPoint / tickSize) : myPoint;
+   double pointValueTotal = MathAbs(netLots) * pointValuePerLot;
+
+   double ptsFloating = 0;
+   if(pointValueTotal > 0)
+      ptsFloating = symbolPL / pointValueTotal;
+
+   // Format Symbol P/L dynamically with signs, unicode indicators, and neutral state color
+   string plStr = "";
+   color plColor = gClrValue;
+   
+   if(symbolPL > 0.005)
+   {
+      plColor = gClrSuccess;
+      if(buyLots > 0 || sellLots > 0)
+      {
+         if(pointValueTotal > 0)
+            plStr = StringFormat("▲ +%.2f (+%d pts)", symbolPL, (int)MathRound(ptsFloating));
+         else
+            plStr = StringFormat("▲ +%.2f (Hedged)", symbolPL);
+      }
+      else
+         plStr = StringFormat("▲ +%.2f (0 pts)", symbolPL);
+   }
+   else if(symbolPL < -0.005)
+   {
+      plColor = gClrDanger;
+      if(buyLots > 0 || sellLots > 0)
+      {
+         if(pointValueTotal > 0)
+            plStr = StringFormat("▼ %.2f (%d pts)", symbolPL, (int)MathRound(ptsFloating));
+         else
+            plStr = StringFormat("▼ %.2f (Hedged)", symbolPL);
+      }
+      else
+         plStr = StringFormat("▼ %.2f (0 pts)", symbolPL);
+   }
+   else
+   {
+      plColor = gClrValue;
+      plStr = "0.00 (0 pts)";
+   }
+   SetVal(PREFIX + "Sym_PLVal", plStr, plColor);
 
    // Risk Analysis Calculations
    double margin = AccountInfoDouble(ACCOUNT_MARGIN);
@@ -691,12 +738,6 @@ void UpdateInfoSection()
          double equityToSO = equity - equitySO;
          eqToSOStr = DoubleToString(equityToSO, 2);
 
-         double netLots = buyLots - sellLots;
-         double tickSize = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-         double tickValue = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
-         double pointValuePerLot = (tickSize > 0) ? tickValue * (myPoint / tickSize) : myPoint;
-         double pointValueTotal = MathAbs(netLots) * pointValuePerLot;
-
          if(pointValueTotal > 0)
          {
             double ptsToSO = equityToSO / pointValueTotal;
@@ -718,8 +759,8 @@ void UpdateInfoSection()
       }
    }
 
-   SetVal(PREFIX + "Sym_BuyExpVal", buyExpStr, gClrValue);
-   SetVal(PREFIX + "Sym_SellExpVal", sellExpStr, gClrValue);
+   SetVal(PREFIX + "Sym_BuyExpVal", buyExpStr, buyLots > 0 ? gClrSuccess : gClrValue);
+   SetVal(PREFIX + "Sym_SellExpVal", sellExpStr, sellLots > 0 ? gClrDanger : gClrValue);
    SetVal(PREFIX + "Acc_MLVal", marginLevelStr, riskColor);
    SetVal(PREFIX + "Acc_SOEqVal", eqToSOStr, riskColor);
    SetVal(PREFIX + "Sym_SOPriceVal", stopOutPriceStr, riskColor);
