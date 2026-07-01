@@ -381,7 +381,7 @@ void CreateDashboardTab(int y)
    // Header Area
    int centerX = X_Offset + (Panel_Width / 2);
    CreateRect(PREFIX + "Hdr", X_Offset + 4, y, Panel_Width - 8, 45, gClrHdr);
-   CreateLabel(PREFIX + "Title", centerX, y + 15, "GT ENGINE LIVE", gClrAccent, 11, FONT_MAIN, ANCHOR_CENTER);
+   CreateLabel(PREFIX + "Title", centerX, y + 15, "GT LIVE", gClrAccent, 11, FONT_MAIN, ANCHOR_CENTER);
    y += 50;
    
    // Column Titles
